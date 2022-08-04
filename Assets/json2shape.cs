@@ -22,44 +22,42 @@ public class json2shape : MonoBehaviour
         print(obj.Count);
         print(obj.Root);
         print(obj.Path);
-        Dig(obj,0);
-        
-        foreach(PropertyDescriptor descriptor in TypeDescriptor.GetProperties(obj))
-        {
-            string name = descriptor.Name;
-            object value = descriptor.GetValue(obj);
-            print(name+"="+ value);
-        }
+        int full_size = Dig(obj,0,"0");
+        print("FULL DIG SIZE: "+full_size);
     }
 
     //Recursive method to retrieve all nested data types
-    void Dig(JToken objecto, int layer)
+    int Dig(JToken objecto, int layer, string address)
     {
-        layer++;
-        print(layer+":"+objecto.GetType());
-        print(layer+":"+objecto);
+        int size = 0;
+        layer++;//
+        address +="_"+layer+"-"+objecto.GetType().ToString().Substring(22,1);
+        //print(layer+"_"+address+"_"+objecto.GetType());
+        //print(layer+"_"+address+"_"+objecto);
         foreach (JToken sub in objecto)
         {
             print(layer+":"+sub.GetType());
             print(layer+":"+sub.HasValues);
-            print(layer+":"+sub);
             if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JProperty")
             {
                 foreach (JToken sub_prop in sub)
-                    Dig(sub_prop,layer);
+                    size += Dig(sub_prop,layer,address+"-P-"+(size+2));
+                print(layer+" Property Size: "+size);
             }
             else if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JObject")
             {
                 foreach (JToken sub_obj in sub)
-                    Dig(sub_obj,layer);
+                    size += Dig(sub_obj,layer,address+"-O-"+(size+2));
+                print(layer+"Object Size: "+size);
             }
             else if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JValue")
             {
-                foreach (JToken sub_val in sub)
-                    Dig(sub_val,layer);
+                size += sub.ToString().Length/100+1;
+                print(sub.Type+": "+size);
             }
-        }
-        
+        }  
+        print(address);
+        return size;
     }
 
     // Update is called once per frame

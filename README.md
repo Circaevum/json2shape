@@ -9,6 +9,10 @@ JToken             - abstract base class
        JObject     - represents a JSON object (contains a collection of JProperties)
        JProperty   - represents a JSON property (a name/JToken pair inside a JObject)
    JValue          - represents a primitive JSON value (string, number, boolean, null)
+         String    - general collection of characters. Could be word, paragraph, code
+         Number    - could be integer or float I believe
+         Boolean   - true or false
+         Null      - empty
 ```
 
 The goal of this project is to build the functionality to ingest any properly formatted JSON file, and visualize the data contained in the form of a 3D shape whose structure is entirely reflective of data contained within.
