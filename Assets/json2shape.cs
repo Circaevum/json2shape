@@ -50,6 +50,16 @@ public class json2shape : MonoBehaviour
                     size += Dig(sub_obj,layer,address+"-O-"+(size+2));
                 print(layer+"Object Size: "+size);
             }
+            else if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JArray")
+            {
+                int array_values = 0;
+                foreach (JToken sub_obj in sub)
+                {
+                    size += Dig(sub_obj,layer,address+"-A-"+(size+2));
+                    array_values++;
+                }
+                print(layer+"\nArray Size: "+size+"\nArray count: "+array_values);
+            }
             else if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JValue")
             {
                 size += sub.ToString().Length/100+1;
