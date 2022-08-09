@@ -17,6 +17,8 @@ JToken             - abstract base class
 
 The goal of this project is to build the functionality to ingest any properly formatted JSON file, and visualize the data contained in the form of a 3D shape whose structure is entirely reflective of data contained within.
 
+## Progress so far:
+![](./Notes/current_progress.png)
 
 
 
