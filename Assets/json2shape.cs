@@ -16,18 +16,20 @@ using Newtonsoft.Json.Linq;
 public class json2shape : MonoBehaviour
 {
     JContainer obj = JObject.Parse(File.ReadAllText("./Assets/projects.json"));
-
+    List<string> master_index = new List<string>();
     // Start is called before the first frame update
     void Start()
     {
-        print(obj.First);
-        print(obj.First.Type);
-        print(obj.Type);
-        print(obj.Count);
-        print(obj.Root);
-        print(obj.Path);
+        //print(obj.First);
+        //print(obj.First.Type);
+        //print(obj.Type);
+        //print(obj.Count);
+        //print(obj.Root);
+        //print(obj.Path);
         int full_size = Dig(obj,0,"0",Color.blue);
-        print("FULL DIG SIZE: "+full_size);
+        print(master_index.First());
+        Reposition(master_index);
+        //print("FULL DIG SIZE: "+full_size);
     }
 
     /// <summary>
@@ -43,19 +45,19 @@ public class json2shape : MonoBehaviour
         //print(layer+"_"+address+"_"+objecto);
         foreach (JToken sub in objecto)
         {
-            print(layer+":"+sub.GetType());
-            print(layer+":"+sub.HasValues);
+            //print(layer+":"+sub.GetType());
+            //print(layer+":"+sub.HasValues);
             if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JProperty")
             {
                 foreach (JToken sub_prop in sub)
                     size += Dig(sub_prop,layer,address+"-P-"+(size+2),Color.red);
-                print(layer+" Property Size: "+size);
+                //print(layer+" Property Size: "+size);
             }
             else if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JObject")
             {
                 foreach (JToken sub_obj in sub)
                     size += Dig(sub_obj,layer,address+"-O-"+(size+2),Color.blue);
-                print(layer+"Object Size: "+size);
+                //print(layer+"Object Size: "+size);
             }
             else if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JArray")
             {
@@ -65,20 +67,20 @@ public class json2shape : MonoBehaviour
                     size += Dig(sub_obj,layer,address+"-A-"+(size+2),Color.green);
                     array_values++;
                 }
-                print(layer+"\nArray Size: "+size+"\nArray count: "+array_values);
+                //print(layer+"\nArray Size: "+size+"\nArray count: "+array_values);
             }
             else if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JValue")
             {
                 thisColor = Color.yellow;
                 size += sub.ToString().Length/100+1;
-                print(sub.Type+": "+size);
+                //print(sub.Type+": "+size);
                 Build(address+"-V-"+size, thisColor, size);
             }
             else
                 thisColor = Color.magenta;
         }  
         GameObject thisObject = Build(address, thisColor, size);
-        print(address);
+        //print(address);
         return size;
     }
 
@@ -114,7 +116,27 @@ public class json2shape : MonoBehaviour
             size=1;
         local_object.transform.localScale = new Vector3(1,size,1);
         local_object.name = object_address;
+        master_index.Append(object_address);
+        //print("Adding "+local_object.name+" to index");
         return local_object;
+    }
+
+    /// <summary>
+    /// "Resposition" assigns each GameObject to its proper parent.
+    /// </summary>
+    void Reposition(List<string> index)
+    {
+        print("YO!");
+        print(index.Count);
+        foreach (string address in index)
+        {
+            string[] levels = address.Split("_");
+            string parent_address = address.Replace(levels.Last(),"");
+            Transform old_transform = GameObject.Find(address).transform;
+            Transform new_transform = GameObject.Find(parent_address).transform;
+            old_transform.SetParent(new_transform);
+            print(address+" : "+parent_address);
+        }
     }
 
     // Update is called once per frame
