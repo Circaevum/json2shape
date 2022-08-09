@@ -27,7 +27,6 @@ public class json2shape : MonoBehaviour
         //print(obj.Root);
         //print(obj.Path);
         int full_size = Dig(obj,0,"0",Color.blue);
-        print(master_index.First());
         Reposition(master_index);
         //print("FULL DIG SIZE: "+full_size);
     }
@@ -41,43 +40,55 @@ public class json2shape : MonoBehaviour
         layer++;//
         string type = objecto.GetType().ToString().Substring(22,1);
         address +="_"+layer+"-"+type;
+        Color sub_color = new Color();
         //print(layer+"_"+address+"_"+objecto.GetType());
         //print(layer+"_"+address+"_"+objecto);
         foreach (JToken sub in objecto)
         {
             //print(layer+":"+sub.GetType());
             //print(layer+":"+sub.HasValues);
-            if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JProperty")
+            if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JValue")
             {
-                foreach (JToken sub_prop in sub)
-                    size += Dig(sub_prop,layer,address+"-P-"+(size+2),Color.red);
-                //print(layer+" Property Size: "+size);
-            }
-            else if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JObject")
-            {
-                foreach (JToken sub_obj in sub)
-                    size += Dig(sub_obj,layer,address+"-O-"+(size+2),Color.blue);
-                //print(layer+"Object Size: "+size);
-            }
-            else if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JArray")
-            {
-                int array_values = 0;
-                foreach (JToken sub_obj in sub)
-                {
-                    size += Dig(sub_obj,layer,address+"-A-"+(size+2),Color.green);
-                    array_values++;
-                }
-                //print(layer+"\nArray Size: "+size+"\nArray count: "+array_values);
-            }
-            else if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JValue")
-            {
-                thisColor = Color.yellow;
+                sub_color = Color.yellow;
                 size += sub.ToString().Length/100+1;
+                address += "-V-"+size;
                 //print(sub.Type+": "+size);
-                Build(address+"-V-"+size, thisColor, size);
+                Build(address, sub_color, size);
             }
             else
-                thisColor = Color.magenta;
+            {
+                if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JProperty")
+                {
+                    foreach (JToken sub_prop in sub)
+                    {
+                        size += Dig(sub_prop,layer,address,Color.red);
+                        address += "-P-"+(size+2);
+                    }
+                    //print(layer+" Property Size: "+size);
+                }
+                else if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JObject")
+                {
+                    foreach (JToken sub_obj in sub)
+                    {
+                        size += Dig(sub_obj,layer,address,Color.blue);
+                        address += "-O-"+(size+2);
+                    }
+                        
+                    //print(layer+"Object Size: "+size);
+                }
+                else if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JArray")
+                {
+                    int array_values = 0;
+                    foreach (JToken sub_obj in sub)
+                    {
+                        size += Dig(sub_obj,layer,address,Color.green);
+                        address += "-A-"+(size+2);
+                        array_values++;
+                    }
+                    //print(layer+"\nArray Size: "+size+"\nArray count: "+array_values);
+                }
+            }
+            
         }  
         GameObject thisObject = Build(address, thisColor, size);
         //print(address);
@@ -116,7 +127,7 @@ public class json2shape : MonoBehaviour
             size=1;
         local_object.transform.localScale = new Vector3(1,size,1);
         local_object.name = object_address;
-        master_index.Append(object_address);
+        master_index.Add(object_address);
         //print("Adding "+local_object.name+" to index");
         return local_object;
     }
@@ -131,11 +142,11 @@ public class json2shape : MonoBehaviour
         foreach (string address in index)
         {
             string[] levels = address.Split("_");
-            string parent_address = address.Replace(levels.Last(),"");
+            string parent_address = address.Replace("_"+levels.Last(),"");
+            print(address+" : "+parent_address);
             Transform old_transform = GameObject.Find(address).transform;
             Transform new_transform = GameObject.Find(parent_address).transform;
             old_transform.SetParent(new_transform);
-            print(address+" : "+parent_address);
         }
     }
 
