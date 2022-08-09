@@ -96,14 +96,21 @@ public class json2shape : MonoBehaviour
 
         // Color the block
         Renderer block_renderer = local_object.GetComponent<Renderer>();
+        localColor.a = 0.5f;
         block_renderer.material.SetColor("_Color",localColor);
 
+        // Make it transparent
+        // Like in this example: https://answers.unity.com/questions/1004666/change-material-rendering-mode-in-runtime.html
+        block_renderer.material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+        block_renderer.material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        block_renderer.material.SetInt("_ZWrite", 0);
+        block_renderer.material.DisableKeyword("_ALPHATEST_ON");
+        block_renderer.material.DisableKeyword("_ALPHABLEND_ON");
+        block_renderer.material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
+        block_renderer.material.renderQueue = 3000;
+
         // Scale the block based on size
-        if(size>400)
-            size/=200;
-        else if (size>100)
-            size/=10;
-        else
+        if(size==0)
             size=1;
         local_object.transform.localScale = new Vector3(1,size,1);
         local_object.name = object_address;
