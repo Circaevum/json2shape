@@ -1,0 +1,38 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "Organization Contracted": "Africa Development Promise (ADP) PA 003-17",
+        "Link": "https://www.africadevelopmentpromise.org/",
+        "Project Name": "Solar Energy Kiosks in Five Villages of Uganda",
+        "Acronym": "ADP",
+        "Location": "Uganda",
+        "Years Active": "2015-Present",
+        "Active/ Retired/ Pending/Dead": "R",
+        "Map Color": "B",
+        "2017-2020+ Award": "$250,000(/3)",
+        "Tranche Payments Started": "Completed",
+        "Continent": "Africa",
+        "Country": "Uganda",
+        "City/Village": "Kiwenda Village, Kiwenda Parish, Bukusuma Sub-County - Wakiso Districe",
+        "Coutry Count": "1",
+        "Country Count Active Only": "",
+        "Leader": "",
+        "Technology": "",
+        "Additional SDGs": "",
+        "HOW MANY SOLAR PANELS ARE INSTALLED?": "",
+        "WHAT IS THE SOLAR PANEL (PV) GENERATING CAPACITY?": "",
+        "Number of Stand-Alone Project Sites": "1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.48,
+          0.4
+        ]
+      }
+    }
+  ]
+}

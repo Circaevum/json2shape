@@ -15,7 +15,7 @@ using Newtonsoft.Json.Linq;
 /// </summary>
 public class json2shape : MonoBehaviour
 {
-    JContainer obj = JObject.Parse(File.ReadAllText("./Assets/projects.json"));
+    JContainer obj = JObject.Parse(File.ReadAllText("./Assets/project.json"));
     List<string> master_index = new List<string>();
     // Start is called before the first frame update
     void Start()
@@ -40,29 +40,28 @@ public class json2shape : MonoBehaviour
         layer++;//
         string type = objecto.GetType().ToString().Substring(22,1);
         address +="_"+layer+"-"+type;
-        Color sub_color = new Color();
         //print(layer+"_"+address+"_"+objecto.GetType());
         //print(layer+"_"+address+"_"+objecto);
+
         foreach (JToken sub in objecto)
         {
-            //print(layer+":"+sub.GetType());
-            //print(layer+":"+sub.HasValues);
+            //If it's a simple value with no child objects, add it to the list with its address
             if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JValue")
             {
-                sub_color = Color.yellow;
-                size += sub.ToString().Length/100+1;
-                address += "-V-"+size;
-                //print(sub.Type+": "+size);
-                Build(address, sub_color, size);
+                ////sub_color = Color.yellow;
+                size += sub.ToString().Length;
+                master_index.Add(address+"-V");
             }
+            // If it does have children objects, then 
             else
             {
                 if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JProperty")
                 {
                     foreach (JToken sub_prop in sub)
                     {
+                        address+="-P";
                         size += Dig(sub_prop,layer,address,Color.red);
-                        address += "-P-"+(size+2);
+                        master_index.Add(address);
                     }
                     //print(layer+" Property Size: "+size);
                 }
@@ -70,8 +69,9 @@ public class json2shape : MonoBehaviour
                 {
                     foreach (JToken sub_obj in sub)
                     {
+                        address += "-O";
                         size += Dig(sub_obj,layer,address,Color.blue);
-                        address += "-O-"+(size+2);
+                        master_index.Add(address);
                     }
                         
                     //print(layer+"Object Size: "+size);
@@ -81,8 +81,9 @@ public class json2shape : MonoBehaviour
                     int array_values = 0;
                     foreach (JToken sub_obj in sub)
                     {
+                        address += "-A";
                         size += Dig(sub_obj,layer,address,Color.green);
-                        address += "-A-"+(size+2);
+                        master_index.Add(address);
                         array_values++;
                     }
                     //print(layer+"\nArray Size: "+size+"\nArray count: "+array_values);
@@ -90,7 +91,7 @@ public class json2shape : MonoBehaviour
             }
             
         }  
-        GameObject thisObject = Build(address, thisColor, size);
+        master_index.Add(address);
         //print(address);
         return size;
     }
@@ -98,7 +99,7 @@ public class json2shape : MonoBehaviour
     /// <summary>
     /// "Build" creates a new block for each data type based on size and address).
     /// </summary>
-    GameObject Build(string object_address, Color localColor, int size)
+    GameObject Build(string object_address, Color localColor)
     {
         GameObject local_object = GameObject.CreatePrimitive(PrimitiveType.Cube);
         string[] levels = object_address.Split("_");
@@ -123,9 +124,9 @@ public class json2shape : MonoBehaviour
         block_renderer.material.renderQueue = 3000;
 
         // Scale the block based on size
-        if(size==0)
-            size=1;
-        local_object.transform.localScale = new Vector3(1,size,1);
+        //if(size==0)
+        //    size=1;
+        //local_object.transform.localScale = new Vector3(1,size,1);
         local_object.name = object_address;
         master_index.Add(object_address);
         //print("Adding "+local_object.name+" to index");
@@ -135,15 +136,39 @@ public class json2shape : MonoBehaviour
     /// <summary>
     /// "Resposition" assigns each GameObject to its proper parent.
     /// </summary>
-    void Reposition(List<string> index)
+    void Reposition(IEnumerable<string> index)
     {
-        print("YO!");
-        print(index.Count);
-        foreach (string address in index)
+        //print(index.Count);
+        foreach (string address in index.Reverse())
         {
             string[] levels = address.Split("_");
+            string new_address = "";
+            Color local_color = Color.white;
+            for(int i =0;i<levels.Count()-1;i++)
+            {
+                if(i==levels.Count()-2)
+                    new_address+=levels[i];
+                else
+                    new_address+=levels[i]+"_";
+            }
             string parent_address = address.Replace("_"+levels.Last(),"");
-            print(address+" : "+parent_address);
+            if(GameObject.Find(parent_address)==null)
+            {
+                Build(parent_address,Color.white);
+            }
+            string type = address[address.Count()-1].ToString();
+            if (type=="V")
+                local_color = Color.yellow;
+            else if (type=="P")
+                local_color = Color.red;
+            else if (type=="O")
+                local_color = Color.blue;
+            else if (type=="A")
+                local_color = Color.green;
+            else
+                local_color = Color.gray;
+            Build(address,local_color);
+            print(address+"     "+new_address+"     "+parent_address);
             Transform old_transform = GameObject.Find(address).transform;
             Transform new_transform = GameObject.Find(parent_address).transform;
             old_transform.SetParent(new_transform);
