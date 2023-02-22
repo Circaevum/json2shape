@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.Json;
 using UnityEngine;
+using UnityEngine.UI;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -17,16 +18,17 @@ public class json2shape : MonoBehaviour
 {
     JContainer obj = JObject.Parse(File.ReadAllText("./Assets/project.json"));
     List<string> master_index = new List<string>();
+    int full_size;
     // Start is called before the first frame update
     void Start()
     {
-        //print(obj.First);
-        //print(obj.First.Type);
-        //print(obj.Type);
-        //print(obj.Count);
-        //print(obj.Root);
-        //print(obj.Path);
-        int full_size = Dig(obj,0,"0",Color.blue);
+        print(obj.First);
+        print(obj.First.Type);
+        print(obj.Type);
+        print(obj.Count);
+        print(obj.Root);
+        print(obj.Path);
+        full_size = Dig(obj,0,0,"0",Color.white);
         Reposition(master_index);
         //print("FULL DIG SIZE: "+full_size);
     }
@@ -34,64 +36,29 @@ public class json2shape : MonoBehaviour
     /// <summary>
     /// "Dig" recursively calls itself to retrieve all nested data types.
     /// </summary>
-    int Dig(JToken objecto, int layer, string address, Color thisColor)
+    int Dig(JToken objecto, int layer, int index, string address, Color color)
     {
-        int size = 0;
-        layer++;//
-        string type = objecto.GetType().ToString().Substring(22,1);
-        address +="_"+layer+"-"+type;
-        //print(layer+"_"+address+"_"+objecto.GetType());
-        //print(layer+"_"+address+"_"+objecto);
+        layer++;
+        address +="."+layer+"-"+index;
+        int size=0;
 
         foreach (JToken sub in objecto)
         {
-            //If it's a simple value with no child objects, add it to the list with its address
-            if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JValue")
+        
+            int array_values = 0;
+            foreach (JToken sub_obj in sub)
             {
-                ////sub_color = Color.yellow;
-                size += sub.ToString().Length;
-                master_index.Add(address+"-V");
+                address += "-A";
+                size = Dig(sub_obj,layer,index,address,Color.green);
+                full_size += size;
+                master_index.Add(address);
+                array_values++;
             }
-            // If it does have children objects, then 
-            else
-            {
-                if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JProperty")
-                {
-                    foreach (JToken sub_prop in sub)
-                    {
-                        address+="-P";
-                        size += Dig(sub_prop,layer,address,Color.red);
-                        master_index.Add(address);
-                    }
-                    //print(layer+" Property Size: "+size);
-                }
-                else if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JObject")
-                {
-                    foreach (JToken sub_obj in sub)
-                    {
-                        address += "-O";
-                        size += Dig(sub_obj,layer,address,Color.blue);
-                        master_index.Add(address);
-                    }
-                        
-                    //print(layer+"Object Size: "+size);
-                }
-                else if (sub.GetType().ToString()=="Newtonsoft.Json.Linq.JArray")
-                {
-                    int array_values = 0;
-                    foreach (JToken sub_obj in sub)
-                    {
-                        address += "-A";
-                        size += Dig(sub_obj,layer,address,Color.green);
-                        master_index.Add(address);
-                        array_values++;
-                    }
-                    //print(layer+"\nArray Size: "+size+"\nArray count: "+array_values);
-                }
-            }
-            
-        }  
-        master_index.Add(address);
+            //print(layer+"\nArray Size: "+size+"\nArray count: "+array_values);
+            master_index.Add(address);
+        }
+        index++;
+        
         //print(address);
         return size;
     }
@@ -139,6 +106,7 @@ public class json2shape : MonoBehaviour
     void Reposition(IEnumerable<string> index)
     {
         //print(index.Count);
+        Build("0",Color.white);
         foreach (string address in index.Reverse())
         {
             string[] levels = address.Split("_");
@@ -152,10 +120,6 @@ public class json2shape : MonoBehaviour
                     new_address+=levels[i]+"_";
             }
             string parent_address = address.Replace("_"+levels.Last(),"");
-            if(GameObject.Find(parent_address)==null)
-            {
-                Build(parent_address,Color.white);
-            }
             string type = address[address.Count()-1].ToString();
             if (type=="V")
                 local_color = Color.yellow;
@@ -167,8 +131,10 @@ public class json2shape : MonoBehaviour
                 local_color = Color.green;
             else
                 local_color = Color.gray;
-            Build(address,local_color);
-            print(address+"     "+new_address+"     "+parent_address);
+            if(GameObject.Find(address)==null)
+                Build(address,local_color);
+            else
+                print(address+"     "+new_address+"     "+parent_address);
             Transform old_transform = GameObject.Find(address).transform;
             Transform new_transform = GameObject.Find(parent_address).transform;
             old_transform.SetParent(new_transform);
